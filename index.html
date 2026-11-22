@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rede Terra do Vale Supermercados · Painel Executivo IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+tailwind.config = { theme: { extend: {
+  fontFamily: { sans: ['Inter','sans-serif'] },
+  colors: { verde: '#00522D', verde2: '#006837', fundo: '#F6F7F8', ambar: '#D99B26', alerta: '#C62828', esmeralda: '#1B873F' }
+}}};
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background: #F6F7F8; }
+  .card { background:#fff; border:1px solid #E2E6E9; border-radius:14px; box-shadow:0 1px 3px rgba(16,24,40,.06), 0 6px 16px rgba(16,24,40,.04); }
+  .tab-btn { padding: 14px 16px; white-space: nowrap; border-bottom: 3px solid transparent; font-weight: 600; color: #D7E7DD; }
+  .tab-btn.active { border-bottom-color: #D99B26; color: #fff; background: #006837; }
+  .tab-btn:hover { color: #fff; }
+  .pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+  .btn-verde { background:#00522D; color:#fff; font-weight:700; padding:10px 16px; border-radius:10px; }
+  .btn-verde:hover { background:#006837; }
+  .btn-out { border:1.5px solid #00522D; color:#00522D; font-weight:700; padding:9px 15px; border-radius:10px; background:#fff; }
+  .btn-out:hover { background:#EEF6F1; }
+  .btn-ok { background:#1B873F; color:#fff; font-weight:700; padding:9px 15px; border-radius:10px; }
+  .xai { font-size:12px; color:#5B6770; }
+  .fade { animation: fade .25s ease; }
+  @keyframes fade { from { opacity:0; transform: translateY(4px);} to { opacity:1; transform:none; } }
+  table td, table th { padding: 10px 12px; text-align:left; border-bottom:1px solid #EEF1F3; font-size:14px; }
+  table th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:#5B6770; background:#F8FAF9; }
+</style>
+</head>
+<body class="text-slate-800">
+
+<!-- LOGIN -->
+<div id="login" class="min-h-screen flex items-center justify-center p-6" style="background:linear-gradient(135deg,#00522D,#006837 60%,#1B873F)">
+  <div class="card w-full max-w-md p-10 fade">
+    <div class="flex items-center gap-3 mb-6">
+      <svg width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#00522D"/><path d="M14 30 L24 14 L34 30 Z" fill="#D99B26"/><path d="M18 34 H30" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>
+      <div><div class="font-extrabold text-verde text-lg leading-tight">Rede Terra do Vale</div><div class="text-xs text-slate-500">Supermercados</div></div>
+    </div>
+    <span class="pill bg-emerald-50 text-esmeralda">Plataforma de Gestão Aumentada por IA — Governança & LGPD Ativas</span>
+    <h1 class="text-2xl font-extrabold mt-5 mb-6 text-slate-900">Acesso ao Portal Corporativo</h1>
+    <label class="text-sm font-semibold">Usuário</label>
+    <input id="inUser" class="w-full border rounded-lg p-3 mb-4 mt-1" placeholder="Ex.: diretoria.exec">
+    <label class="text-sm font-semibold">Senha</label>
+    <input id="inPass" type="password" class="w-full border rounded-lg p-3 mb-6 mt-1" placeholder="••••••••">
+    <button onclick="login()" class="btn-verde w-full py-3 text-base">Acessar Painel Executivo</button>
+    <p class="xai mt-4 text-center">Matriz — Pouso Alegre/MG · Ambiente de demonstração</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <!-- Utility bar -->
+  <div class="bg-slate-900 text-slate-200 text-xs px-6 py-2 flex flex-wrap items-center gap-3 justify-between">
+    <div class="flex items-center gap-4 flex-wrap">
+      <span>Gestor: <b id="gestor" class="text-white"></b></span>
+      <span>Unidade: <b class="text-white">Matriz — Pouso Alegre/MG</b></span>
+      <span class="pill bg-emerald-900 text-emerald-200">LGPD Conforme</span>
+      <span class="pill bg-emerald-900 text-emerald-200">Supervisão Humana Crítica: 100%</span>
+    </div>
+    <button onclick="logout()" class="underline hover:text-white">Sair</button>
+  </div>
+
+  <!-- Main header -->
+  <header class="bg-verde text-white px-6 py-4">
+    <div class="flex flex-wrap items-center gap-6">
+      <div class="flex items-center gap-3 min-w-[260px]">
+        <svg width="40" height="40" viewBox="0 0 48 48"><circle cx="24" cy="24" r="22" fill="#fff"/><path d="M14 30 L24 14 L34 30 Z" fill="#D99B26"/></svg>
+        <div><div class="font-extrabold text-lg leading-tight">Rede Terra do Vale Supermercados</div><div class="text-xs text-emerald-200">Ecossistema de Agentes IA</div></div>
+      </div>
+      <div class="flex-1 min-w-[320px]">
+        <div class="flex bg-white rounded-lg overflow-hidden">
+          <input id="searchIn" class="flex-1 text-slate-800 px-4 py-3 outline-none text-sm" placeholder="Pergunte ao Agente em linguagem natural sobre contratos, NF-es, NCM ou indicadores...">
+          <button onclick="searchSubmit()" class="bg-verde2 px-6 font-bold text-sm hover:bg-verde">BUSCAR</button>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button class="chip text-xs bg-white/10 hover:bg-white/20 rounded-full px-3 py-1" data-q="Impacto da Reforma Tributária (IBS/CBS) nos frios">Impacto da Reforma Tributária (IBS/CBS) nos frios</button>
+          <button class="chip text-xs bg-white/10 hover:bg-white/20 rounded-full px-3 py-1" data-q="Contratos vencendo nos próximos 30 dias">Contratos vencendo nos próximos 30 dias</button>
+          <button class="chip text-xs bg-white/10 hover:bg-white/20 rounded-full px-3 py-1" data-q="Comparativo de perdas vs. média ABRAS MG">Comparativo de perdas vs. média ABRAS MG</button>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <div class="bg-white text-verde rounded-xl px-4 py-2 text-center min-w-[110px]">
+          <div class="text-xs font-semibold">Alertas Críticos</div><div id="cntAlertas" class="text-2xl font-extrabold">3</div>
+        </div>
+        <div class="bg-white text-verde rounded-xl px-4 py-2 text-center min-w-[130px]">
+          <div class="text-xs font-semibold">Aprovações Registradas</div><div id="cntAprov" class="text-2xl font-extrabold">0</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Department nav -->
+  <nav class="bg-verde2 overflow-x-auto">
+    <div class="flex px-4" id="tabs">
+      <button class="tab-btn active" data-tab="t0">Visão Geral (Liderança)</button>
+      <button class="tab-btn" data-tab="t1">Fiscal & Financeiro</button>
+      <button class="tab-btn" data-tab="t2">Almoxarifado & Estoque</button>
+      <button class="tab-btn" data-tab="t3">Compras</button>
+      <button class="tab-btn" data-tab="t4">Marketing</button>
+      <button class="tab-btn" data-tab="t5">Recursos Humanos</button>
+      <button class="tab-btn" data-tab="t6">Digitalização & Governança</button>
+    </div>
+  </nav>
+
+  <main class="p-6 max-w-[1500px] mx-auto">
+
+    <!-- TAB 0 -->
+    <section id="t0" class="tab fade">
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+        <div class="text-sm text-slate-500">Painel Estratégico &gt; Visão Geral Executiva &gt; Operação Multissetorial</div>
+        <label class="text-sm">Ordenar por:
+          <select id="sortSel" class="border rounded-lg p-2 ml-1" onchange="sortAlerts()">
+            <option value="rel">Relevância</option>
+            <option value="impacto">Maior Impacto Financeiro (R$)</option>
+            <option value="risco">Risco Iminente</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div class="card p-5"><div class="text-xs text-slate-500 font-semibold">Eficiência Operacional (Perdas)</div><div class="text-3xl font-extrabold text-esmeralda mt-1">98,65%</div><div class="xai mt-1">Perda de 1,35% (Supera média ABRAS MG de 97,88%)</div></div>
+        <div class="card p-5"><div class="text-xs text-slate-500 font-semibold">Economia Tributária Projetada</div><div class="text-3xl font-extrabold text-verde mt-1">R$ 312.400/ano</div><div class="xai mt-1">Reclassificação NCM e auditoria contínua SPED</div></div>
+        <div class="card p-5"><div class="text-xs text-slate-500 font-semibold">Taxa de Ruptura Geral</div><div class="text-3xl font-extrabold text-ambar mt-1">1,4%</div><div class="xai mt-1">Meta pós-IA: &lt; 2,0% nas 4 lojas</div></div>
+        <div class="card p-5"><div class="text-xs text-slate-500 font-semibold">Produtividade das Equipes</div><div class="text-3xl font-extrabold text-verde mt-1">+19,4%</div><div class="xai mt-1">Redução de 65% no tempo de relatórios gerenciais</div></div>
+      </div>
+      <div id="alertGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6"></div>
+      <div class="card p-5">
+        <div class="font-bold mb-3">Ecossistema de Agentes IA</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 text-sm">
+          <div class="border rounded-lg p-3"><b>Estoque</b><div class="xai">Ativo · Confiança 96%</div></div>
+          <div class="border rounded-lg p-3"><b>Fiscal NCM</b><div class="xai">Ativo · Confiança 94%</div></div>
+          <div class="border rounded-lg p-3"><b>RH & LGPD</b><div class="xai">Ativo · Confiança 91%</div></div>
+          <div class="border rounded-lg p-3"><b>Compras</b><div class="xai">Ativo · Confiança 89%</div></div>
+          <div class="border rounded-lg p-3"><b>Marketing</b><div class="xai">Ativo · Confiança 87%</div></div>
+          <div class="border rounded-lg p-3"><b>Governança OCR</b><div class="xai">Ativo · Confiança 98%</div></div>
+        </div>
+        <div class="mt-4"><span class="pill bg-emerald-50 text-esmeralda">Investimento Estimado: R$ 180 mil – R$ 440 mil | Payback: 18 a 24 meses</span></div>
+      </div>
+    </section>
+
+    <!-- TAB 1 -->
+    <section id="t1" class="tab hidden fade">
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div class="card p-4"><div class="xai">Ativo Circulante</div><div class="text-2xl font-extrabold">R$ 28,4M</div></div>
+        <div class="card p-4"><div class="xai">Estoques</div><div class="text-2xl font-extrabold">R$ 11,2M</div></div>
+        <div class="card p-4"><div class="xai">Passivo Total</div><div class="text-2xl font-extrabold">R$ 19,1M</div></div>
+        <div class="card p-4"><div class="xai">Patrimônio Líquido</div><div class="text-2xl font-extrabold">R$ 18,9M</div></div>
+      </div>
+      <div class="card p-5 mb-6">
+        <div class="font-bold">Auditoria de NF-es</div>
+        <p class="text-sm mt-1">12.480 NF-es auditadas · Taxa de inconsistência: <b>0,32%</b> (meta &lt; 0,5%)</p>
+      </div>
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="card p-5 overflow-x-auto">
+          <div class="font-bold mb-1">Oportunidades NCM/IPI (IA)</div>
+          <div class="xai mb-3">Base legal: TIPI e Soluções de Consulta COSIT</div>
+          <table class="w-full"><thead><tr><th>SKU</th><th>NCM atual</th><th>NCM sugerido</th><th>Base legal</th><th>Economia/ano</th></tr></thead>
+          <tbody>
+            <tr><td>BIS-0231 Biscoito Wafer</td><td>1905.90.90</td><td>1905.32.00</td><td>TIPI · COSIT</td><td>R$ 18.200</td></tr>
+            <tr><td>PAN-0877 Pão Francês Congelado</td><td>1905.90.10</td><td>1905.90.90</td><td>COSIT 2025</td><td>R$ 9.450</td></tr>
+            <tr><td>BIS-0514 Cookie Manteiga</td><td>1905.31.00</td><td>1905.32.00</td><td>TIPI</td><td>R$ 21.250</td></tr>
+          </tbody></table>
+          <div class="xai mt-3">Confiança do modelo: 94% · Revisão humana obrigatória antes da retificação.</div>
+        </div>
+        <div class="card p-5">
+          <div class="font-bold mb-1">Simulador de Impacto da Reforma Tributária (IBS/CBS)</div>
+          <div class="xai mb-4">Projeção de margem bruta antes e após otimização IA</div>
+          <select id="catSel" class="border rounded-lg p-2 w-full mb-4" onchange="simTax()">
+            <option value="frios">Frios e Embutidos</option><option value="mercearia">Mercearia Seca</option>
+            <option value="bebidas">Bebidas</option><option value="hortifruti">Hortifrúti</option>
+          </select>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="border rounded-lg p-4"><div class="xai">Margem bruta atual</div><div id="mAntes" class="text-2xl font-extrabold"></div></div>
+            <div class="border rounded-lg p-4 bg-emerald-50"><div class="xai">Margem com otimização IA</div><div id="mDepois" class="text-2xl font-extrabold text-esmeralda"></div></div>
+          </div>
+          <div id="simNota" class="xai mt-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2 -->
+    <section id="t2" class="tab hidden fade">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="card p-5 xl:col-span-2 overflow-x-auto">
+          <div class="font-bold mb-3">Catálogo de SKUs · Estoque Físico</div>
+          <table class="w-full"><thead><tr><th>SKU</th><th>Produto</th><th>Lote</th><th>Estoque</th><th>Validade</th><th>Giro/dia</th><th>Status</th></tr></thead>
+          <tbody id="skuBody"></tbody></table>
+        </div>
+        <div class="card p-5">
+          <div class="font-bold">Previsão de Demanda ML (15 dias)</div>
+          <div class="xai mb-3">Demanda prevista × estoque atual · Salame Italiano Sadia 400g</div>
+          <canvas id="chartEstoque" height="260"></canvas>
+          <button onclick="dispararReposicao()" class="btn-verde w-full mt-4">Disparar Reposição Automática ao Compras</button>
+          <div id="replMsg" class="xai mt-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3 -->
+    <section id="t3" class="tab hidden fade">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="card p-5 xl:col-span-2 overflow-x-auto">
+          <div class="font-bold mb-3">Matriz de Cotações · Fornecedores Ativos</div>
+          <table class="w-full"><thead><tr><th>Fornecedor</th><th>Preço unit.</th><th>Prazo entrega</th><th>Pontualidade hist.</th><th>Variação 90d</th></tr></thead>
+          <tbody>
+            <tr><td>BRF / Sadia</td><td>R$ 31,80</td><td>3 dias</td><td>94%</td><td class="text-alerta">+4,2%</td></tr>
+            <tr><td>Seara</td><td>R$ 32,40</td><td>2 dias</td><td>97%</td><td class="text-esmeralda">+1,1%</td></tr>
+            <tr><td>Ceratti</td><td>R$ 30,90</td><td>5 dias</td><td>88%</td><td class="text-alerta">+6,8%</td></tr>
+            <tr><td>Laticínios Vale Verde</td><td>R$ 29,70</td><td>1 dia</td><td>98%</td><td class="text-esmeralda">+0,6%</td></tr>
+          </tbody></table>
+        </div>
+        <div class="card p-5 border-2 border-ambar">
+          <span class="pill bg-amber-50 text-ambar">Recomendação Multicritério IA</span>
+          <div class="font-bold text-lg mt-3">Laticínios Vale Verde</div>
+          <p class="text-sm mt-2">Melhor equilíbrio entre preço, risco de atraso e margem de validade para os frios e laticínios. Reduz em <b>70%</b> o tempo de análise de cotações.</p>
+          <div class="xai mt-3">Confiança: 89% · Pesos: preço 40%, pontualidade 35%, validade 25%</div>
+          <button onclick="aprovarOC()" class="btn-verde w-full mt-4">Aprovar Ordem de Compra</button>
+          <div id="ocMsg" class="xai mt-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4 -->
+    <section id="t4" class="tab hidden fade">
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div class="card p-5"><div class="xai">Ticket médio por loja</div><div class="text-2xl font-extrabold">R$ 94,60</div></div>
+        <div class="card p-5"><div class="xai">Clube Terra do Vale · Adesão</div><div class="text-2xl font-extrabold">38.200 ativos</div></div>
+        <div class="card p-5"><div class="xai">Conversão do Encarte Digital</div><div class="text-2xl font-extrabold">6,3%</div></div>
+        <div class="card p-5"><div class="xai">Sentimento nas redes</div><div class="text-2xl font-extrabold text-esmeralda">84% Positivo</div></div>
+      </div>
+      <div class="card p-5 mb-6 border-l-4 border-alerta">
+        <div class="font-bold">Gargalo operacional detectado pela IA</div>
+        <p class="text-sm mt-1">Pico de reclamações sobre fila no açougue às sextas entre 17h e 19h.</p>
+        <div class="xai mt-2">Confiança: 92% · Fonte: 1.146 menções e registros de SAC</div>
+      </div>
+      <div class="card p-5">
+        <div class="font-bold">Gerador de Combo Promocional com IA</div>
+        <div class="xai mb-3">Sugestão para Encarte Digital Fim de Semana</div>
+        <button onclick="gerarCombo()" class="btn-verde">Gerar Sugestão de Combo Promocional com IA</button>
+        <div id="comboOut" class="mt-4 text-sm"></div>
+      </div>
+    </section>
+
+    <!-- TAB 5 -->
+    <section id="t5" class="tab hidden fade">
+      <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        <div class="card p-5"><div class="xai">Colaboradores ativos</div><div class="text-2xl font-extrabold">385</div><div class="xai">4 lojas</div></div>
+        <div class="card p-5"><div class="xai">Turnover mensal</div><div class="text-2xl font-extrabold text-esmeralda">2,8%</div><div class="xai">Antes: 4,1%</div></div>
+        <div class="card p-5"><div class="xai">Vagas abertas</div><div class="text-2xl font-extrabold">3</div><div class="xai">Operador de Caixa e Fatiados</div></div>
+        <div class="card p-5"><div class="xai">Tempo de contratação</div><div class="text-2xl font-extrabold">-54%</div></div>
+      </div>
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="card p-5 overflow-x-auto">
+          <div class="font-bold mb-1">Ranking de Candidatos · Anonimizado LGPD</div>
+          <div class="xai mb-3">Aderência técnica e cultural</div>
+          <table class="w-full"><thead><tr><th>Candidato</th><th>Aderência</th><th>LGPD</th><th>Revisão</th></tr></thead>
+          <tbody>
+            <tr><td>Candidato #0412</td><td>92%</td><td>Anonimizado</td><td class="text-esmeralda">Aprovado</td></tr>
+            <tr><td>Candidato #0187</td><td>88%</td><td>Anonimizado</td><td class="text-esmeralda">Aprovado</td></tr>
+            <tr><td>Candidato #0233</td><td>61%</td><td>Anonimizado</td><td class="text-ambar">Revisão humana</td></tr>
+            <tr><td>Candidato #0309</td><td>58%</td><td>Anonimizado</td><td class="text-ambar">Revisão humana</td></tr>
+          </tbody></table>
+          <div class="xai mt-3">Triagem de 42 currículos · Economia de 18 horas</div>
+        </div>
+        <div class="card p-5">
+          <div class="font-bold">Gerador de PDI · Administração 4.0 e IA</div>
+          <div class="xai mb-3">Selecione o colaborador-perfil para upskilling</div>
+          <select id="pdiSel" class="border rounded-lg p-2 w-full mb-4">
+            <option>Operador de Caixa</option><option>Líder de Loja</option><option>Analista Fiscal</option><option>Açougueiro</option>
+          </select>
+          <button onclick="gerarPDI()" class="btn-verde">Gerar PDI</button>
+          <div id="pdiOut" class="mt-4 text-sm"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6 -->
+    <section id="t6" class="tab hidden fade">
+      <div class="card p-5 mb-6 overflow-x-auto">
+        <div class="flex flex-wrap justify-between gap-3 mb-3">
+          <div class="font-bold">Repositório OCR de Documentos</div>
+          <input id="ocrFilter" oninput="renderOcr()" placeholder="Filtrar documentos..." class="border rounded-lg p-2 text-sm">
+        </div>
+        <table class="w-full"><thead><tr><th>Documento</th><th>Data</th><th>Valor / Vigência</th><th>Cláusula-chave</th><th></th></tr></thead>
+        <tbody id="ocrBody"></tbody></table>
+      </div>
+      <div class="card p-5">
+        <div class="font-bold text-lg mb-1">Trilha de Auditoria em Tempo Real</div>
+        <div class="xai mb-3">Registra cada decisão tomada durante a apresentação</div>
+        <div class="overflow-x-auto">
+          <table class="w-full"><thead><tr><th>Horário</th><th>Agente</th><th>Decisão</th><th>Confiança</th><th>Usuário</th><th>Status de Governança</th></tr></thead>
+          <tbody id="auditBody"><tr><td colspan="6" class="xai">Nenhuma decisão registrada ainda.</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- XAI Drawer -->
+<div id="drawer" class="fixed inset-0 bg-black/40 hidden items-end md:items-center justify-center z-50" onclick="if(event.target===this)closeDrawer()">
+  <div class="bg-white rounded-t-2xl md:rounded-2xl w-full max-w-2xl p-6 max-h-[85vh] overflow-y-auto fade">
+    <div class="flex justify-between items-start mb-3">
+      <div><span class="pill bg-emerald-50 text-esmeralda">Resposta XAI · Fundamentada</span><h3 id="dqTitle" class="text-lg font-extrabold mt-2"></h3></div>
+      <button onclick="closeDrawer()" class="text-slate-500 text-2xl leading-none">&times;</button>
+    </div>
+    <div id="dqBody" class="text-sm leading-relaxed"></div>
+    <div class="mt-4 text-xs text-slate-500" id="dqSources"></div>
+  </div>
+</div>
+
+<!-- OCR Modal -->
+<div id="ocrModal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 fade">
+    <div class="flex justify-between mb-3"><h3 id="ocrTitle" class="font-extrabold"></h3><button onclick="document.getElementById('ocrModal').classList.add('hidden')" class="text-2xl leading-none">&times;</button></div>
+    <div id="ocrBodyModal" class="text-sm space-y-2"></div>
+    <div class="xai mt-4">Confiança da extração: 97% · Revisado pelo sistema de governança</div>
+  </div>
+</div>
+
+<script>
+// ===== ESTADO =====
+const state = { user: 'Diretoria Executiva', audit: [], alertas: 3, aprov: 0, chart: null };
+const pad = n => String(n).padStart(2,'0');
+const agora = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+const $ = id => document.getElementById(id);
+
+// ===== LOGIN =====
+function login() {
+  const u = $('inUser').value.trim();
+  state.user = u || 'Diretoria Executiva';
+  $('gestor').textContent = state.user;
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  renderAlerts(); renderSku(); renderOcr(); simTax(); renderChart();
+}
+function logout() { location.reload(); }
+
+// ===== TABS =====
+document.querySelectorAll('#tabs .tab-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#tabs .tab-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.querySelectorAll('main .tab').forEach(s => s.classList.add('hidden'));
+  $(b.dataset.tab).classList.remove('hidden');
+  if (b.dataset.tab === 't2' && state.chart) state.chart.resize();
+}));
+
+// ===== ALERTAS (3 cards) =====
+const alertas = [
+  { id:'a1', impacto:3840, risco:3, cat:'Almoxarifado & Estoque · Frios e Embutidos', titulo:'Risco de validade em Frios', texto:'140 unidades de Salame Italiano Fatiado 400g e Presunto Cozido 200g vencem em 6 dias na Loja 02.', acao:'Sugere desconto dinâmico de -25% no app Clube Terra do Vale e pausa da reposição semanal automática.', impactoTxt:'Evita perda de R$ 3.840,00', conf:96, base:'Rastreio de lote + curva de demanda ML de 15 dias', st:'pend' },
+  { id:'a2', impacto:48900, risco:2, cat:'Fiscal & Financeiro · Motor NCM/TIPI', titulo:'Divergência de NCM em 18 SKUs', texto:'Divergência de classificação em biscoitos, wafers e panificados ao cruzar NF-es de entrada com a TIPI e as Soluções de Consulta COSIT.', acao:'Recomenda reclassificação fiscal e recuperação de créditos.', impactoTxt:'Ganho projetado: R$ 48.900,00', conf:94, base:'Parser semântico de SKU × Solução de Consulta COSIT', st:'pend' },
+  { id:'a3', impacto:0, risco:1, cat:'Recursos Humanos · Triagem + Trava LGPD', titulo:'Triagem de 42 currículos', texto:'Ranqueou 42 candidatos para 3 vagas de Operador de Caixa e Fatiados (-54% no tempo de contratação). Pausou a rejeição de 2 candidatos que exigem revisão humana para mitigar viés algorítmico (LGPD).', acao:'Pronto para validação do Gerente de RH.', impactoTxt:'Tempo economizado: 18 horas', conf:91, base:'Matching de competências + guardrail de equidade LGPD', st:'pend' }
+];
+
+function renderAlerts() {
+  $('alertGrid').innerHTML = alertas.map(a => `
+    <div class="card p-5 fade" id="card-${a.id}">
+      <div class="text-xs font-bold text-verde uppercase">${a.cat}</div>
+      <h3 class="font-extrabold text-lg mt-1">${a.titulo}</h3>
+      <p class="text-sm mt-2">${a.texto}</p>
+      <div class="mt-3 p-3 rounded-lg bg-amber-50 text-sm"><b>Ação da IA:</b> ${a.acao}<div class="font-bold text-verde mt-1">${a.impactoTxt}</div></div>
+      <div class="xai mt-3">XAI · Confiança ${a.conf}% · Base: ${a.base}</div>
+      <div id="act-${a.id}" class="mt-4 ${a.st==='pend' ? 'flex gap-2' : 'hidden'}">
+        <button onclick="decidir('${a.id}','aprovado')" class="btn-ok flex-1">Aprovar e Registrar Log</button>
+        <button onclick="decidir('${a.id}','revisar')" class="btn-out flex-1">Rejeitar / Revisar</button>
+      </div>
+      <div id="dec-${a.id}" class="${a.st==='pend' ? 'hidden' : ''} mt-4 text-sm font-semibold text-verde">${a.st==='pend' ? '' : a.decisaoTxt || ''}</div>
+    </div>`).join('');
+  $('cntAlertas').textContent = state.alertas;
+}
+
+function decidir(id, tipo) {
+  const a = alertas.find(x => x.id === id);
+  if (a.st !== 'pend') return;
+  a.st = tipo;
+  const hora = agora();
+  a.decisaoTxt = `Decisão Registrada por ${state.user} às ${hora}`;
+  $('act-'+id).classList.add('hidden');
+  const d = $('dec-'+id); d.classList.remove('hidden'); d.textContent = a.decisaoTxt;
+  d.className = 'mt-4 text-sm font-semibold ' + (tipo==='aprovado' ? 'text-esmeralda' : 'text-ambar');
+  state.alertas = Math.max(0, state.alertas - 1);
+  if (tipo === 'aprovado') state.aprov++;
+  $('cntAlertas').textContent = state.alertas;
+  $('cntAprov').textContent = state.aprov;
+  logAudit(a.titulo, tipo==='aprovado' ? 'Ação aprovada' : 'Enviado para revisão humana', a.conf, tipo==='aprovado' ? 'Aprovado · Log registrado' : 'Revisão humana pendente');
+}
+
+function sortAlerts() {
+  const v = $('sortSel').value;
+  if (v === 'impacto') alertas.sort((x,y) => y.impacto - x.impacto);
+  else if (v === 'risco') alertas.sort((x,y) => y.risco - x.risco);
+  else alertas.sort((x,y) => x.id.localeCompare(y.id));
+  renderAlerts();
+  alertas.forEach(a => { if (a.st !== 'pend') { $('act-'+a.id).classList.add('hidden'); const d=$('dec-'+a.id); d.classList.remove('hidden'); d.textContent=a.decisaoTxt; } });
+}
+
+// ===== AUDITORIA =====
+function logAudit(agente, decisao, conf, status) {
+  state.audit.unshift({ h: agora(), agente, decisao, conf, user: state.user, status });
+  const body = state.audit.map(r => `<tr><td>${r.h}</td><td>${r.agente}</td><td>${r.decisao}</td><td>${r.conf}%</td><td>${r.user}</td><td><span class="pill bg-emerald-50 text-esmeralda">${r.status}</span></td></tr>`).join('');
+  $('auditBody').innerHTML = body;
+}
+
+// ===== PESQUISA XAI =====
+const respostas = {
+  'Impacto da Reforma Tributária (IBS/CBS) nos frios': {
+    titulo: 'Impacto da Reforma Tributária (IBS/CBS) nos frios',
+    html: `<p>Para frios e embutidos, a transição para IBS/CBS exige revisão da classificação fiscal de cada SKU. A IA identificou que parte dos produtos está mal classificada na entrada, o que pode elevar a carga efetiva.</p><p class="mt-2">Estimativa: margem bruta da categoria pode subir cerca de 1,8 p.p. após a reclassificação e o crédito recuperado.</p>`,
+    src: 'Fontes: Tabela TIPI; Reforma Tributária (EC 132/2023); Relatório de Auditoria NCM 2026.', conf: 93
+  },
+  'Contratos vencendo nos próximos 30 dias': {
+    titulo: 'Contratos vencendo nos próximos 30 dias',
+    html: `<p>Há <b>3 contratos</b> com vencimento nos próximos 30 dias: locação da Loja 03, acordo comercial com fornecedor de frios e manutenção de equipamentos de refrigeração.</p><p class="mt-2">Recomendação: iniciar renegociação do acordo comercial com antecedência de 15 dias para evitar perda de condições.</p>`,
+    src: 'Fontes: Contrato #402; Contrato de Locação Loja 03; Acordo Comercial BRF 2026.', conf: 95
+  },
+  'Comparativo de perdas vs. média ABRAS MG': {
+    titulo: 'Comparativo de perdas vs. média ABRAS MG',
+    html: `<p>A rede registra eficiência de <b>98,65%</b>, ou seja, perda de 1,35%. A média ABRAS MG está em 97,88%, o que coloca a operação acima da média regional.</p><p class="mt-2">O maior vetor de perda está em hortifrúti e frios vencidos, justamente onde o agente de estoque atua.</p>`,
+    src: 'Fontes: Relatório ABRAS 2026 (MG); Painel de Perdas Matriz.', conf: 91
+  }
+};
+
+function openDrawer(q) {
+  const r = respostas[q] || {
+    titulo: q || 'Consulta ao Agente',
+    html: `<p>Consulta registrada. Com base nas bases internas de contratos, NF-es e indicadores, a análise foi executada com confiança moderada de 78%. Recomenda-se validar o resultado com o responsável pela área antes de qualquer decisão.</p>`,
+    src: 'Fontes: Base de contratos; NF-es auditadas; Indicadores consolidados.', conf: 78
+  };
+  $('dqTitle').textContent = r.titulo;
+  $('dqBody').innerHTML = r.html + `<div class="xai mt-4">Confiança: ${r.conf}% · Decisão final sempre humana (Human-in-the-Loop).</div>`;
+  $('dqSources').textContent = r.src;
+  $('drawer').classList.remove('hidden'); $('drawer').classList.add('flex');
+}
+function closeDrawer() { $('drawer').classList.add('hidden'); $('drawer').classList.remove('flex'); }
+function searchSubmit() { const q = $('searchIn').value.trim(); openDrawer(q); }
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => openDrawer(c.dataset.q)));
+
+// ===== SIMULADOR TRIBUTÁRIO =====
+const cenarios = {
+  frios:{ antes:18.4, depois:20.2, nota:'Reclassificação NCM de embutidos e crédito de IBS/CBS sobre insumos.' },
+  mercearia:{ antes:21.7, depois:22.9, nota:'Ajuste de alíquota diferenciada para itens da cesta básica.' },
+  bebidas:{ antes:24.1, depois:23.2, nota:'Reforma eleva tributação em bebidas açucaradas; IA sugere mix de compras.' },
+  hortifruti:{ antes:26.3, depois:27.4, nota:'Alíquota reduzida preserva margem; ganho pela redução de perdas.' }
+};
+function simTax() {
+  const c = cenarios[$('catSel').value];
+  $('mAntes').textContent = c.antes.toFixed(1).replace('.',',') + '%';
+  $('mDepois').textContent = c.depois.toFixed(1).replace('.',',') + '%';
+  $('simNota').textContent = c.nota;
+}
+
+// ===== ESTOQUE =====
+const skus = [
+  { sku:'SAL-4001', p:'Salame Italiano Sadia 400g', lote:'L-2611', est:140, val:'6 dias', giro:38, st:'Crítico' },
+  { sku:'PRE-2002', p:'Presunto Cozido Magro 200g', lote:'L-2609', est:96, val:'6 dias', giro:27, st:'Crítico' },
+  { sku:'QUE-3003', p:'Queijo Mussarela Fatiado 300g', lote:'L-2640', est:210, val:'14 dias', giro:31, st:'Atenção' },
+  { sku:'PIC-4004', p:'Picanha Bovina Resfriada kg', lote:'L-2655', est:58, val:'4 dias', giro:22, st:'Atenção' },
+  { sku:'CAF-5005', p:'Café Torrado 500g', lote:'L-2701', est:840, val:'210 dias', giro:64, st:'Normal' },
+  { sku:'LEI-6006', p:'Leite Integral 1L', lote:'L-2688', est:1320, val:'12 dias', giro:210, st:'Normal' }
+];
+const stPill = { Normal:'bg-emerald-50 text-esmeralda', Atenção:'bg-amber-50 text-ambar', Crítico:'bg-red-50 text-alerta' };
+function renderSku() {
+  $('skuBody').innerHTML = skus.map(s => `<tr><td>${s.sku}</td><td>${s.p}</td><td>${s.lote}</td><td>${s.est}</td><td>${s.val}</td><td>${s.giro}</td><td><span class="pill ${stPill[s.st]}">${s.st}</span></td></tr>`).join('');
+}
+function renderChart() {
+  const labels = Array.from({length:15}, (_,i) => `Dia ${i+1}`);
+  const demanda = labels.map((_,i) => Math.round(40 + 12*Math.sin(i/2) + i*1.6));
+  const estoque = labels.map((_,i) => Math.max(0, 140 - i*9));
+  const ctx = $('chartEstoque').getContext('2d');
+  if (state.chart) state.chart.destroy();
+  state.chart = new Chart(ctx, { type:'line', data:{ labels, datasets:[
+    { label:'Demanda prevista (ML)', data:demanda, borderColor:'#D99B26', backgroundColor:'rgba(217,155,38,.15)', tension:.35, fill:true },
+    { label:'Estoque atual', data:estoque, borderColor:'#00522D', tension:.3 }
+  ]}, options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } } });
+}
+function dispararReposicao() {
+  $('replMsg').textContent = `Reposição disparada às ${agora()} por ${state.user}. Aguardando aprovação do comprador.`;
+  logAudit('Estoque', 'Reposição automática disparada ao Compras', 96, 'Aprovado · Log registrado');
+}
+
+// ===== COMPRAS =====
+function aprovarOC() {
+  $('ocMsg').textContent = `Ordem de compra aprovada às ${agora()} por ${state.user}.`;
+  logAudit('Compras', 'Ordem de compra · Laticínios Vale Verde', 89, 'Aprovado · Log registrado');
+}
+
+// ===== MARKETING =====
+function gerarCombo() {
+  $('comboOut').innerHTML = `<div class="p-4 rounded-lg bg-emerald-50"><b>Combo Fim de Semana Terra do Vale</b><br>Frios Sadia + Pão Francês + Queijo Mussarela por <b>R$ 39,90</b> (economia de 22%).<div class="xai mt-2">Público: famílias das 17h às 19h · Canal: Clube Terra do Vale e encarte digital · Confiança: 88%</div></div>`;
+  logAudit('Marketing', 'Combo promocional gerado para o encarte', 88, 'Pendente de aprovação');
+}
+
+// ===== RH =====
+function gerarPDI() {
+  const p = $('pdiSel').value;
+  $('pdiOut').innerHTML = `<div class="p-4 rounded-lg bg-emerald-50"><b>PDI · ${p}</b><ul class="list-disc ml-5 mt-2"><li>Fundamentos de Administração 4.0 e automação de processos (12h)</li><li>Uso de ferramentas de IA no dia a dia da operação (8h)</li><li>Boas práticas de LGPD no atendimento e cadastro (4h)</li></ul><div class="xai mt-2">Validação do gestor de RH obrigatória</div></div>`;
+}
+
+// ===== OCR =====
+const docs = [
+  { n:'Alvará Vigilância Sanitária Loja 01', d:'03/2026', v:'Vigência até 12/2027', c:'Renovação anual obrigatória', m:'Alvará vigente. Renovação prevista para 11/2027. Responsável técnico: Eng. de Alimentos.' },
+  { n:'Contrato de Locação Loja 03', d:'07/2022', v:'R$ 14.800/mês', c:'Reajuste IGP-M anual', m:'Locação com reajuste IGP-M anual. Garantia: seguro-fiança. Vencimento em 07/2027.' },
+  { n:'Acordo Comercial BRF 2026', d:'01/2026', v:'R$ 1,2M/ano', c:'Condições de prazo de pagamento', m:'Prazo de pagamento de 35 dias. Cláusula de desconto por volume acima de R$ 80 mil/mês.' }
+];
+function renderOcr() {
+  const f = ($('ocrFilter').value || '').toLowerCase();
+  $('ocrBody').innerHTML = docs.filter(d => d.n.toLowerCase().includes(f)).map((d,i) => `<tr><td>${d.n}</td><td>${d.d}</td><td>${d.v}</td><td>${d.c}</td><td><button class="btn-out" onclick="verOcr('${docs.indexOf(d)}')">Visualizar Extração OCR</button></td></tr>`).join('');
+}
+function verOcr(i) {
+  const d = docs[i];
+  $('ocrTitle').textContent = d.n;
+  $('ocrBodyModal').innerHTML = `<p><b>Data:</b> ${d.d}</p><p><b>Valor/Vigência:</b> ${d.v}</p><p><b>Cláusula-chave:</b> ${d.c}</p><p class="mt-2">${d.m}</p>`;
+  $('ocrModal').classList.remove('hidden'); $('ocrModal').classList.add('flex');
+}
+</script>
+</body>
+</html>
